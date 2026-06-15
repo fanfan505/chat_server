@@ -1,4 +1,4 @@
-﻿#include "Database.h"
+#include "Database.h"
 #include <iostream>
 
 Database::Database() : connection_(nullptr) {}
@@ -19,7 +19,7 @@ bool Database::connect(const std::string& host, int port, const std::string& use
         return false;
     }
     
-    my_bool reconnect = 1;
+    bool reconnect = 1;
     mysql_options(connection_, MYSQL_OPT_RECONNECT, &reconnect);
     
     if (!mysql_real_connect(connection_, host.c_str(), user.c_str(), 
@@ -202,8 +202,8 @@ int Database::createGroup(const std::string& name, const std::string& descriptio
     if (!executeQuery(query)) return -1;
     
     char query2[256];
-    sprintf(query2, "INSERT INTO group_members (group_id, user_id, role) VALUES (%lld, %d, 1)",
-            mysql_insert_id(connection_), owner_id);
+    sprintf(query2, "INSERT INTO group_members (group_id, user_id, role) VALUES (%d, %d, 1)",
+            static_cast<int>(mysql_insert_id(connection_)), owner_id);
     
     if (!executeQuery(query2)) return -1;
     
