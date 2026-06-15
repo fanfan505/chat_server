@@ -1,0 +1,68 @@
+CREATE DATABASE IF NOT EXISTS chat_db;
+USE chat_db;
+
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    nickname VARCHAR(50) NOT NULL,
+    avatar VARCHAR(255) DEFAULT '',
+    online TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS friends (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    friend_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY (user_id, friend_id)
+);
+
+CREATE TABLE IF NOT EXISTS friend_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    from_id INT NOT NULL,
+    to_id INT NOT NULL,
+    message VARCHAR(255) DEFAULT '',
+    status TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (from_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (to_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY (from_id, to_id)
+);
+
+CREATE TABLE IF NOT EXISTS groups (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description VARCHAR(500) DEFAULT '',
+    owner_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS group_members (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT NOT NULL,
+    user_id INT NOT NULL,
+    role TINYINT(1) DEFAULT 0,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY (group_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    from_id INT NOT NULL,
+    to_id INT DEFAULT 0,
+    group_id INT DEFAULT 0,
+    content TEXT NOT NULL,
+    timestamp DATETIME NOT NULL,
+    is_group TINYINT(1) DEFAULT 0,
+    is_read TINYINT(1) DEFAULT 0,
+    FOREIGN KEY (from_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (to_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+);
