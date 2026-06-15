@@ -6,11 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(hiredis REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 find_library(MYSQL_LIBRARY mysqlclient PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
 find_path(MYSQL_INCLUDE_DIR mysql/mysql.h PATHS /usr/include /usr/include/mysql)
+
+find_library(HIREDIS_LIBRARY hiredis PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_path(HIREDIS_INCLUDE_DIR hiredis/hiredis.h PATHS /usr/include)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/server/include
@@ -24,7 +26,7 @@ add_executable(chat_server ${SERVER_SOURCES})
 
 target_link_libraries(chat_server
     ${MYSQL_LIBRARY}
-    ${HIREDIS_LIBRARIES}
+    ${HIREDIS_LIBRARY}
     muduo_net
     muduo_base
     pthread
