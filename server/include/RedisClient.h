@@ -1,9 +1,10 @@
-﻿#pragma once
+#pragma once
 
 #include <hiredis/hiredis.h>
 #include <string>
 #include <memory>
 #include <functional>
+#include <thread>
 #include "Common.h"
 
 class RedisClient {

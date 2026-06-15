@@ -1,4 +1,4 @@
-﻿#include "ChatServer.h"
+#include "ChatServer.h"
 #include "Database.h"
 #include "RedisClient.h"
 #include <muduo/base/Logging.h>
@@ -174,9 +174,9 @@ void ChatServer::handleChatMessage(const muduo::net::TcpConnectionPtr& conn, con
     
     int from_id = it->second;
     int to_id = data["to_id"];
-    int group_id = data.contains("group_id") ? data["group_id"] : 0;
+    int group_id = data.contains("group_id") ? data["group_id"].get<int>() : 0;
     std::string content = data["content"];
-    bool is_group = data.contains("is_group") ? data["is_group"] : false;
+    bool is_group = data.contains("is_group") ? data["is_group"].get<bool>() : false;
     
     time_t now = time(nullptr);
     char timestamp[20];
