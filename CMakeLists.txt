@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Boost REQUIRED COMPONENTS system thread)
+find_library(BOOST_SYSTEM_LIBRARY boost_system PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_library(BOOST_THREAD_LIBRARY boost_thread PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_path(BOOST_INCLUDE_DIR boost/asio.hpp PATHS /usr/include)
 
 find_library(MYSQL_LIBRARY mysqlclient PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
 find_path(MYSQL_INCLUDE_DIR mysql/mysql.h PATHS /usr/include /usr/include/mysql)
@@ -21,7 +23,7 @@ include_directories(
     ${MYSQL_INCLUDE_DIR}
     ${HIREDIS_INCLUDE_DIR}
     ${NLOHMANN_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIRS}
+    ${BOOST_INCLUDE_DIR}
 )
 
 file(GLOB_RECURSE SERVER_SOURCES "${PROJECT_SOURCE_DIR}/server/src/*.cpp")
@@ -31,7 +33,8 @@ add_executable(chat_server ${SERVER_SOURCES})
 target_link_libraries(chat_server
     ${MYSQL_LIBRARY}
     ${HIREDIS_LIBRARY}
-    ${Boost_LIBRARIES}
+    ${BOOST_SYSTEM_LIBRARY}
+    ${BOOST_THREAD_LIBRARY}
     muduo_net
     muduo_base
     pthread
