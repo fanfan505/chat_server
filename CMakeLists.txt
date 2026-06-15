@@ -42,22 +42,25 @@ target_link_libraries(chat_server
 
 install(TARGETS chat_server DESTINATION bin)
 
-find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets Network)
+if(Qt5_FOUND)
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTORCC ON)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTORCC ON)
+    include_directories(
+        ${PROJECT_SOURCE_DIR}/client/include
+    )
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/client/include
-)
+    file(GLOB_RECURSE CLIENT_SOURCES "${PROJECT_SOURCE_DIR}/client/src/*.cpp")
 
-file(GLOB_RECURSE CLIENT_SOURCES "${PROJECT_SOURCE_DIR}/client/src/*.cpp")
+    add_executable(chat_client ${CLIENT_SOURCES})
 
-add_executable(chat_client ${CLIENT_SOURCES})
-
-target_link_libraries(chat_client
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Network
-)
+    target_link_libraries(chat_client
+        Qt5::Core
+        Qt5::Widgets
+        Qt5::Network
+    )
+else()
+    message(WARNING "Qt5 not found, client will not be built")
+endif()
