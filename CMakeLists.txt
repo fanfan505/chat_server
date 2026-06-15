@@ -6,9 +6,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(MySQL REQUIRED)
 find_package(hiredis REQUIRED)
 find_package(nlohmann_json REQUIRED)
+
+find_library(MYSQL_LIBRARY mysqlclient PATHS /usr/lib /usr/lib/x86_64-linux-gnu)
+find_path(MYSQL_INCLUDE_DIR mysql/mysql.h PATHS /usr/include /usr/include/mysql)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/server/include
@@ -21,7 +23,7 @@ file(GLOB_RECURSE SERVER_SOURCES "${PROJECT_SOURCE_DIR}/server/src/*.cpp")
 add_executable(chat_server ${SERVER_SOURCES})
 
 target_link_libraries(chat_server
-    ${MYSQL_LIBRARIES}
+    ${MYSQL_LIBRARY}
     ${HIREDIS_LIBRARIES}
     muduo_net
     muduo_base
