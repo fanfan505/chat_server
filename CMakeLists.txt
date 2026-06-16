@@ -12,13 +12,21 @@ if(BUILD_CLIENT)
     set(CMAKE_PREFIX_PATH "C:/Qt/6.11.1/mingw_64" ${CMAKE_PREFIX_PATH})
     find_package(Qt6 COMPONENTS Core Network Widgets REQUIRED)
     
+    set(CMAKE_AUTOMOC ON)
+    set(CMAKE_AUTOUIC ON)
+    set(CMAKE_AUTORCC ON)
+    
     include_directories(
         ${PROJECT_SOURCE_DIR}/client/include
     )
     
+    file(GLOB_RECURSE CLIENT_HEADERS "client/include/*.h")
     file(GLOB_RECURSE CLIENT_SOURCES "client/src/*.cpp")
     
-    add_executable(chat_client ${CLIENT_SOURCES})
+    qt_add_executable(chat_client
+        ${CLIENT_SOURCES}
+        ${CLIENT_HEADERS}
+    )
     
     target_link_libraries(chat_client
         Qt6::Core
