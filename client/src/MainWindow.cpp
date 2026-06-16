@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), chatClient_(new C
     connect(chatClient_, &ChatClient::registerFailed, this, &MainWindow::onRegisterFailed);
     connect(chatClient_, &ChatClient::messageReceived, this, &MainWindow::onMessageReceived);
     connect(chatClient_, &ChatClient::friendRequestReceived, this, &MainWindow::onFriendRequestReceived);
+    connect(chatClient_, &ChatClient::friendAccepted, this, &MainWindow::onFriendAccepted);
 }
 
 MainWindow::~MainWindow() {}
@@ -241,6 +242,11 @@ void MainWindow::onFriendRequestReceived(const QJsonObject& request) {
         acceptData["from_id"] = from_id;
         chatClient_->sendJson(acceptData);
     }
+}
+
+void MainWindow::onFriendAccepted(int friend_id) {
+    QMessageBox::information(this, "Friend Added", QString("Successfully added user %1 as friend!").arg(friend_id));
+    lwFriends_->addItem(QString("User %1").arg(friend_id));
 }
 
 void MainWindow::onConnected() {}

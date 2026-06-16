@@ -39,6 +39,7 @@ signals:
     void addFriendResponse(bool success);
     void createGroupResponse(bool success, int group_id);
     void joinGroupResponse(bool success);
+    void friendAccepted(int friend_id);
     void error(const QString& message);
 
 private slots:

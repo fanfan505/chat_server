@@ -186,13 +186,13 @@ void ChatServer::handleAddFriend(const muduo::net::TcpConnectionPtr& conn, const
         response["type"] = 2002;
         response["success"] = true;
         
-        if (RedisClient::getInstance().isUserOnline(to_id)) {
+        if (isUserOnline(to_id)) {
             json notify = {
                 {"type", 2003},
                 {"from_id", from_id},
                 {"message", message}
             };
-            forwardToServer(to_id, notify.dump());
+            sendMessageToUser(to_id, notify.dump());
         }
     } else {
         response["type"] = 2002;
@@ -214,13 +214,22 @@ void ChatServer::handleAcceptFriend(const muduo::net::TcpConnectionPtr& conn, co
         response["type"] = 2003;
         response["success"] = true;
         
-        if (RedisClient::getInstance().isUserOnline(from_id)) {
-            json notify = {
-                {"type", 2003},
+        if (isUserOnline(to_id)) {
+            json notify_to = {
+                {"type", 2006},
                 {"success", true},
-                {"from_id", to_id}
+                {"friend_id", from_id}
             };
-            forwardToServer(from_id, notify.dump());
+            sendMessageToUser(to_id, notify_to.dump());
+        }
+        
+        if (isUserOnline(from_id)) {
+            json notify_from = {
+                {"type", 2006},
+                {"success", true},
+                {"friend_id", to_id}
+            };
+            sendMessageToUser(from_id, notify_from.dump());
         }
     } else {
         response["type"] = 2003;

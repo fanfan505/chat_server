@@ -159,6 +159,10 @@ void ChatClient::onReadyRead() {
                 emit joinGroupResponse(obj["success"].toBool());
                 break;
             }
+            case 2006: {
+                emit friendAccepted(obj["friend_id"].toInt());
+                break;
+            }
             case 3001: {
                 emit messageReceived(obj);
                 break;
