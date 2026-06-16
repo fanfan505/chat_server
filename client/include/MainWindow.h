@@ -37,6 +37,8 @@ private slots:
     
 private:
     void setupUi();
+    void showLoginPage();
+    void showChatPage();
     void addMessage(const QString& sender, const QString& content, bool isSelf = false);
     void loadFriends(const QJsonArray& friends);
     void loadGroups(const QJsonArray& groups);
