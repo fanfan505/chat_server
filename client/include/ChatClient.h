@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <QTcpSocket>
 #include <QObject>
@@ -27,13 +27,16 @@ public:
 signals:
     void connected();
     void disconnected();
-    void loginSuccess(const QJsonObject& user);
+    void loginSuccess(const QJsonObject& user, const QJsonArray& friends, const QJsonArray& groups, const QJsonArray& offline_messages);
     void loginFailed(const QString& message);
     void registerSuccess();
     void registerFailed(const QString& message);
     void messageReceived(const QJsonObject& message);
     void offlineMessagesReceived(const QJsonArray& messages);
     void friendRequestReceived(const QJsonObject& request);
+    void addFriendResponse(bool success);
+    void createGroupResponse(bool success, int group_id);
+    void joinGroupResponse(bool success);
     void error(const QString& message);
     
 private slots:
@@ -46,5 +49,3 @@ private:
     void sendJson(const QJsonObject& data);
     
     QTcpSocket* socket_;
-    bool connected_;
-};

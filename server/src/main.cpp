@@ -1,4 +1,4 @@
-﻿#include "ChatServer.h"
+#include "ChatServer.h"
 #include "Database.h"
 #include "RedisClient.h"
 #include <muduo/base/Logging.h>
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     
     muduo::net::EventLoop loop;
     muduo::net::InetAddress listenAddr(port);
-    ChatServer server(&loop, listenAddr, "ChatServer");
+    ChatServer server(&loop, listenAddr, "ChatServer", server_ip);
     
     server.start();
     loop.loop();

@@ -7,10 +7,14 @@
 
 ChatServer::ChatServer(muduo::net::EventLoop* loop,
                        const muduo::net::InetAddress& listenAddr,
-                       const std::string& nameArg)
-    : server_(loop, listenAddr, nameArg), loop_(loop) {
+                       const std::string& nameArg,
+                       const std::string& serverIp)
+    : server_(loop, listenAddr, nameArg), loop_(loop), serverIp_(serverIp) {
     server_.setConnectionCallback(std::bind(&ChatServer::onConnection, this, std::placeholders::_1));
     server_.setMessageCallback(std::bind(&ChatServer::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    
+    RedisClient::getInstance().subscribe("chat_cluster", 
+        std::bind(&ChatServer::onRedisMessage, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 ChatServer::~ChatServer() {}
@@ -78,6 +82,7 @@ void ChatServer::handleLogin(const muduo::net::TcpConnectionPtr& conn, const jso
         connectionUsers_[conn->name()] = user.id;
         
         Database::getInstance().updateUserOnlineStatus(user.id, true);
+        RedisClient::getInstance().setUserOnline(user.id, serverIp_, server_.port());
         
         response["type"] = 1002;
         response["success"] = true;
@@ -103,7 +108,35 @@ void ChatServer::handleLogin(const muduo::net::TcpConnectionPtr& conn, const jso
             Database::getInstance().clearOfflineMessages(user.id);
         }
         
-        LOG_INFO << "User " << user.username << " logged in";
+        auto friends = Database::getInstance().getFriends(user.id);
+        if (!friends.empty()) {
+            json friendsJson = json::array();
+            for (const auto& f : friends) {
+                friendsJson.push_back({
+                    {"id", f.id},
+                    {"username", f.username},
+                    {"nickname", f.nickname},
+                    {"avatar", f.avatar},
+                    {"online", f.online}
+                });
+            }
+            response["friends"] = friendsJson;
+        }
+        
+        auto groups = Database::getInstance().getUserGroups(user.id);
+        if (!groups.empty()) {
+            json groupsJson = json::array();
+            for (const auto& g : groups) {
+                groupsJson.push_back({
+                    {"id", g.id},
+                    {"name", g.name},
+                    {"description", g.description}
+                });
+            }
+            response["groups"] = groupsJson;
+        }
+        
+        LOG_INFO << "User " << user.username << " logged in on server " << serverIp_;
     } else {
         response["type"] = 1002;
         response["success"] = false;
@@ -152,13 +185,13 @@ void ChatServer::handleAddFriend(const muduo::net::TcpConnectionPtr& conn, const
         response["type"] = 2002;
         response["success"] = true;
         
-        if (isUserOnline(to_id)) {
+        if (RedisClient::getInstance().isUserOnline(to_id)) {
             json notify = {
                 {"type", 2003},
                 {"from_id", from_id},
                 {"message", message}
             };
-            sendMessageToUser(to_id, notify.dump());
+            forwardToServer(to_id, notify.dump());
         }
     } else {
         response["type"] = 2002;
@@ -196,9 +229,7 @@ void ChatServer::handleChatMessage(const muduo::net::TcpConnectionPtr& conn, con
     if (is_group) {
         sendMessageToGroup(group_id, data.dump(), from_id);
     } else {
-        if (isUserOnline(to_id)) {
-            sendMessageToUser(to_id, data.dump());
-        }
+        forwardToServer(to_id, data.dump());
     }
     
     json response;
@@ -276,8 +307,40 @@ void ChatServer::sendMessageToGroup(int group_id, const std::string& message, in
     auto members = Database::getInstance().getGroupMembers(group_id);
     for (const auto& member : members) {
         if (member.id != exclude_user_id) {
-            sendMessageToUser(member.id, message);
+            forwardToServer(member.id, message);
         }
+    }
+}
+
+void ChatServer::forwardToServer(int target_user_id, const std::string& message) {
+    if (isUserOnline(target_user_id)) {
+        sendMessageToUser(target_user_id, message);
+    } else {
+        std::string target_server = RedisClient::getInstance().getUserServer(target_user_id);
+        if (!target_server.empty()) {
+            json forward_msg = {
+                {"type", 5001},
+                {"target_user_id", target_user_id},
+                {"message", message}
+            };
+            RedisClient::getInstance().publish("chat_cluster", forward_msg.dump());
+        }
+    }
+}
+
+void ChatServer::onRedisMessage(const std::string& channel, const std::string& message) {
+    try {
+        json data = json::parse(message);
+        if (data["type"] == 5001) {
+            int target_user_id = data["target_user_id"];
+            std::string inner_msg = data["message"];
+            
+            if (isUserOnline(target_user_id)) {
+                sendMessageToUser(target_user_id, inner_msg);
+            }
+        }
+    } catch (const std::exception& e) {
+        LOG_ERROR << "Parse redis message error: " << e.what();
     }
 }
 

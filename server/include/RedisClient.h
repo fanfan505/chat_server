@@ -5,6 +5,8 @@
 #include <memory>
 #include <functional>
 #include <thread>
+#include <map>
+#include <mutex>
 #include "Common.h"
 
 class RedisClient {
@@ -70,6 +72,9 @@ private:
     
     std::thread pubsub_thread_;
     bool running_;
+    
+    std::map<std::string, std::function<void(const std::string&, const std::string&)>> callbacks_;
+    std::mutex callbacks_mutex_;
     
     void pubsubLoop();
 };

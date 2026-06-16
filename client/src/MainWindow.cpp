@@ -1,7 +1,8 @@
-﻿#include "MainWindow.h"
+#include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
+#include <QInputDialog>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), chatClient_(new ChatClient(this)) {
     setupUi();
@@ -72,12 +73,46 @@ void MainWindow::setupUi() {
     chatPage_ = new QWidget();
     QHBoxLayout* chatLayout = new QHBoxLayout(chatPage_);
     
-    lwFriends_ = new QListWidget();
-    lwFriends_->setFixedWidth(200);
-    connect(lwFriends_, &QListWidget::itemClicked, this, &MainWindow::onSelectFriend);
-    chatLayout->addWidget(lwFriends_);
+    QWidget* leftPanel = new QWidget();
+    leftPanel->setFixedWidth(220);
+    QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
     
-    QVBoxLayout* rightLayout = new QVBoxLayout();
+    tabWidget_ = new QTabWidget();
+    leftLayout->addWidget(tabWidget_);
+    
+    friendsTab_ = new QWidget();
+    QVBoxLayout* friendsLayout = new QVBoxLayout(friendsTab_);
+    lwFriends_ = new QListWidget();
+    connect(lwFriends_, &QListWidget::itemClicked, this, &MainWindow::onSelectFriend);
+    friendsLayout->addWidget(lwFriends_);
+    tabWidget_->addTab(friendsTab_, "Friends");
+    
+    groupsTab_ = new QWidget();
+    QVBoxLayout* groupsLayout = new QVBoxLayout(groupsTab_);
+    lwGroups_ = new QListWidget();
+    connect(lwGroups_, &QListWidget::itemClicked, this, &MainWindow::onSelectGroup);
+    groupsLayout->addWidget(lwGroups_);
+    tabWidget_->addTab(groupsTab_, "Groups");
+    
+    QHBoxLayout* btnLayout = new QHBoxLayout();
+    btnAddFriend_ = new QPushButton("Add Friend");
+    connect(btnAddFriend_, &QPushButton::clicked, this, &MainWindow::onAddFriend);
+    btnLayout->addWidget(btnAddFriend_);
+    
+    btnCreateGroup_ = new QPushButton("Create Group");
+    connect(btnCreateGroup_, &QPushButton::clicked, this, &MainWindow::onCreateGroup);
+    btnLayout->addWidget(btnCreateGroup_);
+    
+    btnJoinGroup_ = new QPushButton("Join Group");
+    connect(btnJoinGroup_, &QPushButton::clicked, this, &MainWindow::onJoinGroup);
+    btnLayout->addWidget(btnJoinGroup_);
+    leftLayout->addLayout(btnLayout);
+    
+    chatLayout->addWidget(leftPanel);
+    
+    QWidget* rightPanel = new QWidget();
+    QVBoxLayout* rightLayout = new QVBoxLayout(rightPanel);
+    
     teChat_ = new QTextEdit();
     teChat_->setReadOnly(true);
     rightLayout->addWidget(teChat_);
@@ -91,7 +126,8 @@ void MainWindow::setupUi() {
     inputLayout->addWidget(btnSend_);
     rightLayout->addLayout(inputLayout);
     
-    chatLayout->addLayout(rightLayout);
+    chatLayout->addWidget(rightPanel);
+    
     stackedWidget_->addWidget(chatPage_);
 }
 
@@ -128,7 +164,7 @@ void MainWindow::onSendMessage() {
         return;
     }
     
-    chatClient_->sendMessage(currentChatId_, content);
+    chatClient_->sendMessage(currentChatId_, content, isGroupChat_, currentGroupId_);
     addMessage("Me", content, true);
     leInput_->clear();
 }
@@ -138,16 +174,33 @@ void MainWindow::onSelectFriend(QListWidgetItem* item) {
     QStringList parts = text.split(" (");
     currentChatName_ = parts[0];
     currentChatId_ = parts[1].replace(")", "").toInt();
+    isGroupChat_ = false;
+    currentGroupId_ = 0;
     teChat_->clear();
+    teChat_->append(QString("<h3 style='text-align:center;'>Chat with %1</h3>").arg(currentChatName_));
 }
 
-void MainWindow::onLoginSuccess(const QJsonObject& user) {
+void MainWindow::onSelectGroup(QListWidgetItem* item) {
+    QString text = item->text();
+    QStringList parts = text.split(" (");
+    currentChatName_ = parts[0];
+    currentChatId_ = parts[1].replace(")", "").toInt();
+    isGroupChat_ = true;
+    currentGroupId_ = currentChatId_;
+    teChat_->clear();
+    teChat_->append(QString("<h3 style='text-align:center;'>Group: %1</h3>").arg(currentChatName_));
+}
+
+void MainWindow::onLoginSuccess(const QJsonObject& user, const QJsonArray& friends, const QJsonArray& groups, const QJsonArray& offline_messages) {
     currentUserId_ = user["id"].toInt();
-    lwFriends_->clear();
-    lwFriends_->addItem("Friend 1 (1)");
-    lwFriends_->addItem("Friend 2 (2)");
-    lwFriends_->addItem("Group Chat (101)");
+    loadFriends(friends);
+    loadGroups(groups);
     showChatPage();
+    
+    if (!offline_messages.isEmpty()) {
+        loadOfflineMessages(offline_messages);
+        QMessageBox::information(this, "Offline Messages", QString("You have %1 offline messages").arg(offline_messages.size()));
+    }
 }
 
 void MainWindow::onLoginFailed(const QString& message) {
@@ -177,6 +230,39 @@ void MainWindow::onConnected() {}
 
 void MainWindow::onDisconnected() {}
 
+void MainWindow::onAddFriend() {
+    bool ok;
+    int friendId = QInputDialog::getInt(this, "Add Friend", "Enter friend user ID:", 0, 0, 999999, 1, &ok);
+    if (ok) {
+        QString message = QInputDialog::getText(this, "Add Friend", "Enter request message:", QLineEdit::Normal, "", &ok);
+        if (ok) {
+            chatClient_->sendAddFriend(friendId, message);
+            QMessageBox::information(this, "Success", "Friend request sent");
+        }
+    }
+}
+
+void MainWindow::onCreateGroup() {
+    bool ok;
+    QString name = QInputDialog::getText(this, "Create Group", "Enter group name:", QLineEdit::Normal, "", &ok);
+    if (ok && !name.isEmpty()) {
+        QString description = QInputDialog::getText(this, "Create Group", "Enter group description:", QLineEdit::Normal, "", &ok);
+        if (ok) {
+            chatClient_->sendCreateGroup(name, description);
+            QMessageBox::information(this, "Success", "Group created successfully");
+        }
+    }
+}
+
+void MainWindow::onJoinGroup() {
+    bool ok;
+    int groupId = QInputDialog::getInt(this, "Join Group", "Enter group ID:", 0, 0, 999999, 1, &ok);
+    if (ok) {
+        chatClient_->sendJoinGroup(groupId);
+        QMessageBox::information(this, "Success", "Joined group successfully");
+    }
+}
+
 void MainWindow::showLoginPage() {
     stackedWidget_->setCurrentWidget(loginPage_);
 }
@@ -186,7 +272,37 @@ void MainWindow::showChatPage() {
 }
 
 void MainWindow::addMessage(const QString& sender, const QString& content, bool isSelf) {
-    QString color = isSelf ? "blue" : "green";
+    QString color = isSelf ? "#2563eb" : "#16a34a";
     QString align = isSelf ? "right" : "left";
-    teChat_->append(QString("<p style='text-align:%1; color:%2;'>%3: %4</p>").arg(align).arg(color).arg(sender).arg(content));
+    QString bgColor = isSelf ? "#dbeafe" : "#dcfce7";
+    teChat_->append(QString("<div style='text-align:%1; margin-bottom:8px;'>"
+                            "<span style='display:inline-block; max-width:70%; padding:8px 12px; border-radius:12px; background:%2;'>"
+                            "<strong style='color:%3;'>%4:</strong> %5"
+                            "</span></div>").arg(align).arg(bgColor).arg(color).arg(sender).arg(content));
+}
+
+void MainWindow::loadFriends(const QJsonArray& friends) {
+    lwFriends_->clear();
+    for (const auto& friendItem : friends) {
+        QJsonObject f = friendItem.toObject();
+        QString status = f["online"].toBool() ? "<span style='color:green;'>●</span>" : "<span style='color:gray;'>●</span>";
+        lwFriends_->addItem(QString("%1 %2 (%3)").arg(f["nickname"].toString()).arg(status).arg(f["id"].toInt()));
+    }
+}
+
+void MainWindow::loadGroups(const QJsonArray& groups) {
+    lwGroups_->clear();
+    for (const auto& groupItem : groups) {
+        QJsonObject g = groupItem.toObject();
+        lwGroups_->addItem(QString("%1 (%2)").arg(g["name"].toString()).arg(g["id"].toInt()));
+    }
+}
+
+void MainWindow::loadOfflineMessages(const QJsonArray& messages) {
+    teChat_->append("<h3 style='text-align:center; color:orange;'>--- Offline Messages ---</h3>");
+    for (const auto& msgItem : messages) {
+        QJsonObject msg = msgItem.toObject();
+        addMessage("Friend", msg["content"].toString(), false);
+    }
+    teChat_->append("<h3 style='text-align:center; color:orange;'>--- End of Offline Messages ---</h3>");
 }

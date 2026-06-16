@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <muduo/net/TcpServer.h>
 #include <muduo/net/EventLoop.h>
@@ -12,7 +12,8 @@ class ChatServer {
 public:
     ChatServer(muduo::net::EventLoop* loop, 
                const muduo::net::InetAddress& listenAddr,
-               const std::string& nameArg);
+               const std::string& nameArg,
+               const std::string& serverIp);
     
     ~ChatServer();
     
@@ -25,6 +26,8 @@ public:
     void removeConnection(int user_id);
     
     bool isUserOnline(int user_id);
+    
+    void onRedisMessage(const std::string& channel, const std::string& message);
     
 private:
     void onConnection(const muduo::net::TcpConnectionPtr& conn);
@@ -53,10 +56,14 @@ private:
                       MessageType type, 
                       const json& data);
     
+    void forwardToServer(int target_user_id, const std::string& message);
+    
     muduo::net::TcpServer server_;
     muduo::net::EventLoop* loop_;
     
     std::map<int, muduo::net::TcpConnectionPtr> userConnections_;
     std::map<std::string, int> connectionUsers_;
     std::mutex mutex_;
+    
+    std::string serverIp_;
 };

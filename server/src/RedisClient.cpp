@@ -96,11 +96,18 @@ void RedisClient::subscribe(const std::string& channel,
                             std::function<void(const std::string&, const std::string&)> callback) {
     if (!pubsub_context_) return;
     
+    std::lock_guard<std::mutex> lock(callbacks_mutex_);
+    callbacks_[channel] = callback;
+    
     redisCommand(pubsub_context_, "SUBSCRIBE %s", channel.c_str());
 }
 
 void RedisClient::unsubscribe(const std::string& channel) {
     if (!pubsub_context_) return;
+    
+    std::lock_guard<std::mutex> lock(callbacks_mutex_);
+    callbacks_.erase(channel);
+    
     redisCommand(pubsub_context_, "UNSUBSCRIBE %s", channel.c_str());
 }
 
@@ -309,8 +316,16 @@ void RedisClient::pubsubLoop() {
         if (redisGetReply(pubsub_context_, (void**)&reply) == REDIS_OK && reply) {
             if (reply->type == REDIS_REPLY_ARRAY && reply->elements >= 3) {
                 std::string type = reply->element[0]->str;
-                std::string channel = reply->element[1]->str;
-                std::string message = reply->element[2]->str;
+                if (type == "message") {
+                    std::string channel = reply->element[1]->str;
+                    std::string message = reply->element[2]->str;
+                    
+                    std::lock_guard<std::mutex> lock(callbacks_mutex_);
+                    auto it = callbacks_.find(channel);
+                    if (it != callbacks_.end()) {
+                        it->second(channel, message);
+                    }
+                }
             }
             freeReplyObject(reply);
         }

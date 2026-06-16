@@ -1,4 +1,4 @@
-﻿#include "ChatClient.h"
+#include "ChatClient.h"
 
 ChatClient::ChatClient(QObject *parent) : QObject(parent), socket_(new QTcpSocket(this)), connected_(false) {
     connect(socket_, &QTcpSocket::connected, this, &ChatClient::onConnected);
@@ -109,10 +109,11 @@ void ChatClient::onReadyRead() {
             case 1002: {
                 bool success = obj["success"].toBool();
                 if (success) {
-                    emit loginSuccess(obj["user"].toObject());
-                    if (obj.contains("offline_messages")) {
-                        emit offlineMessagesReceived(obj["offline_messages"].toArray());
-                    }
+                    QJsonObject user = obj["user"].toObject();
+                    QJsonArray friends = obj.contains("friends") ? obj["friends"].toArray() : QJsonArray();
+                    QJsonArray groups = obj.contains("groups") ? obj["groups"].toArray() : QJsonArray();
+                    QJsonArray offline_messages = obj.contains("offline_messages") ? obj["offline_messages"].toArray() : QJsonArray();
+                    emit loginSuccess(user, friends, groups, offline_messages);
                 } else {
                     emit loginFailed(obj["message"].toString());
                 }
@@ -127,12 +128,30 @@ void ChatClient::onReadyRead() {
                 }
                 break;
             }
-            case 3001: {
-                emit messageReceived(obj);
+            case 2002: {
+                emit addFriendResponse(obj["success"].toBool());
                 break;
             }
             case 2003: {
                 emit friendRequestReceived(obj);
+                break;
+            }
+            case 2004: {
+                emit createGroupResponse(obj["success"].toBool(), obj["group_id"].toInt());
+                break;
+            }
+            case 2005: {
+                emit joinGroupResponse(obj["success"].toBool());
+                break;
+            }
+            case 3001: {
+                emit messageReceived(obj);
+                break;
+            }
+            case 3002: {
+                break;
+            }
+            case 4001: {
                 break;
             }
             default:
