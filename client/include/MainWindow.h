@@ -34,6 +34,7 @@ private slots:
     void onAddFriend();
     void onCreateGroup();
     void onJoinGroup();
+    void onFriendRequestReceived(const QJsonObject& request);
     
 private:
     void setupUi();
