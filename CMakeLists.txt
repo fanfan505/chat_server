@@ -96,3 +96,4 @@ if(BUILD_SERVER)
     endif()
 
     message(STATUS "Build server: ON")
+endif()
