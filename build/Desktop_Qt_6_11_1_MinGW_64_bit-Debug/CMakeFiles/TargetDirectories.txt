@@ -1,0 +1,3 @@
+C:/Users/user/Desktop/traeproject/chat2/build/Desktop_Qt_6_11_1_MinGW_64_bit-Debug/CMakeFiles/chat_client.dir
+C:/Users/user/Desktop/traeproject/chat2/build/Desktop_Qt_6_11_1_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+C:/Users/user/Desktop/traeproject/chat2/build/Desktop_Qt_6_11_1_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir

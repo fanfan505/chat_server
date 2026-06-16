@@ -4,7 +4,7 @@ ChatClient::ChatClient(QObject *parent) : QObject(parent), socket_(new QTcpSocke
     connect(socket_, &QTcpSocket::connected, this, &ChatClient::onConnected);
     connect(socket_, &QTcpSocket::disconnected, this, &ChatClient::onDisconnected);
     connect(socket_, &QTcpSocket::readyRead, this, &ChatClient::onReadyRead);
-    connect(socket_, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error), this, &ChatClient::onError);
+    connect(socket_, &QTcpSocket::errorOccurred, this, &ChatClient::onError);
 }
 
 ChatClient::~ChatClient() {
@@ -104,7 +104,7 @@ void ChatClient::onReadyRead() {
     if (!doc.isNull() && doc.isObject()) {
         QJsonObject obj = doc.object();
         int type = obj["type"].toInt();
-        
+
         switch (type) {
             case 1002: {
                 bool success = obj["success"].toBool();
@@ -146,12 +146,6 @@ void ChatClient::onReadyRead() {
             }
             case 3001: {
                 emit messageReceived(obj);
-                break;
-            }
-            case 3002: {
-                break;
-            }
-            case 4001: {
                 break;
             }
             default:

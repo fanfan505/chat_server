@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+﻿#include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -140,7 +140,7 @@ void MainWindow::onLogin() {
         return;
     }
     
-    chatClient_->connectToServer("localhost", 8080);
+    chatClient_->connectToServer("192.168.255.128", 8080);
     chatClient_->sendLogin(username, password);
 }
 
@@ -154,7 +154,7 @@ void MainWindow::onRegister() {
         return;
     }
     
-    chatClient_->connectToServer("localhost", 8080);
+    chatClient_->connectToServer("192.168.255.128", 8080);
     chatClient_->sendRegister(username, password, nickname);
 }
 
