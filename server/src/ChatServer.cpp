@@ -9,7 +9,7 @@ ChatServer::ChatServer(muduo::net::EventLoop* loop,
                        const muduo::net::InetAddress& listenAddr,
                        const std::string& nameArg,
                        const std::string& serverIp)
-    : server_(loop, listenAddr, nameArg), loop_(loop), serverIp_(serverIp) {
+    : server_(loop, listenAddr, nameArg), loop_(loop), serverIp_(serverIp), serverPort_(listenAddr.toPort()) {
     server_.setConnectionCallback(std::bind(&ChatServer::onConnection, this, std::placeholders::_1));
     server_.setMessageCallback(std::bind(&ChatServer::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     
@@ -82,7 +82,7 @@ void ChatServer::handleLogin(const muduo::net::TcpConnectionPtr& conn, const jso
         connectionUsers_[conn->name()] = user.id;
         
         Database::getInstance().updateUserOnlineStatus(user.id, true);
-        RedisClient::getInstance().setUserOnline(user.id, serverIp_, server_.port());
+        RedisClient::getInstance().setUserOnline(user.id, serverIp_, serverPort_);
         
         response["type"] = 1002;
         response["success"] = true;

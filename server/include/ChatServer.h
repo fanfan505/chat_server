@@ -66,4 +66,5 @@ private:
     std::mutex mutex_;
     
     std::string serverIp_;
+    uint16_t serverPort_;
 };
