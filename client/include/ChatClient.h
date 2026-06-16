@@ -5,6 +5,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QList>
 
 class ChatClient : public QObject {
     Q_OBJECT
@@ -47,7 +48,9 @@ private slots:
 
 private:
     void sendJson(const QJsonObject& data);
+    void flushQueue();
 
     QTcpSocket* socket_;
     bool connected_;
+    QList<QJsonObject> messageQueue_;
 };

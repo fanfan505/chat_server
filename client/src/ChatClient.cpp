@@ -82,14 +82,29 @@ void ChatClient::sendJoinGroup(int group_id) {
 }
 
 void ChatClient::sendJson(const QJsonObject& data) {
-    QJsonDocument doc(data);
-    QByteArray bytes = doc.toJson(QJsonDocument::Compact);
-    socket_->write(bytes);
-    socket_->flush();
+    if (socket_->state() == QAbstractSocket::ConnectedState) {
+        QJsonDocument doc(data);
+        QByteArray bytes = doc.toJson(QJsonDocument::Compact);
+        socket_->write(bytes);
+        socket_->flush();
+    } else {
+        messageQueue_.append(data);
+    }
+}
+
+void ChatClient::flushQueue() {
+    while (!messageQueue_.isEmpty()) {
+        QJsonObject data = messageQueue_.takeFirst();
+        QJsonDocument doc(data);
+        QByteArray bytes = doc.toJson(QJsonDocument::Compact);
+        socket_->write(bytes);
+        socket_->flush();
+    }
 }
 
 void ChatClient::onConnected() {
     connected_ = true;
+    flushQueue();
     emit connected();
 }
 
