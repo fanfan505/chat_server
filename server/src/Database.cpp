@@ -144,6 +144,13 @@ bool Database::rejectFriendRequest(int from_id, int to_id) {
     return executeQuery(query);
 }
 
+bool Database::deleteFriend(int user_id, int friend_id) {
+    char query[256];
+    sprintf(query, "DELETE FROM friends WHERE (user_id = %d AND friend_id = %d) OR (user_id = %d AND friend_id = %d)",
+            user_id, friend_id, friend_id, user_id);
+    return executeQuery(query);
+}
+
 std::vector<UserInfo> Database::getFriends(int user_id) {
     std::vector<UserInfo> friends;
     

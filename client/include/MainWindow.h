@@ -9,6 +9,8 @@
 #include <QTabWidget>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QMap>
+#include <QList>
 #include "ChatClient.h"
 
 class MainWindow : public QMainWindow {
@@ -36,6 +38,9 @@ private slots:
     void onJoinGroup();
     void onFriendRequestReceived(const QJsonObject& request);
     void onFriendAccepted(int friend_id);
+    void onDeleteFriend();
+    void onFriendDeleted(bool success);
+    void onFriendRemoved(int friend_id);
     
 private:
     void setupUi();
@@ -74,10 +79,13 @@ private:
     QPushButton* btnAddFriend_;
     QPushButton* btnCreateGroup_;
     QPushButton* btnJoinGroup_;
+    QPushButton* btnDeleteFriend_;
     
     int currentUserId_;
     int currentChatId_;
     QString currentChatName_;
     bool isGroupChat_;
     int currentGroupId_;
+    
+    QMap<int, QList<QPair<QString, QString>>> chatHistory_;
 };

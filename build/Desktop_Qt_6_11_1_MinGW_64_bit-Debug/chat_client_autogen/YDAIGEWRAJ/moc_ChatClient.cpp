@@ -63,6 +63,8 @@ template <> constexpr inline auto ChatClient::qt_create_metaobjectdata<qt_meta_t
         "createGroupResponse",
         "group_id",
         "joinGroupResponse",
+        "friendAccepted",
+        "friend_id",
         "error",
         "onConnected",
         "onDisconnected",
@@ -115,19 +117,23 @@ template <> constexpr inline auto ChatClient::qt_create_metaobjectdata<qt_meta_t
         QtMocHelpers::SignalData<void(bool)>(24, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::Bool, 21 },
         }}),
+        // Signal 'friendAccepted'
+        QtMocHelpers::SignalData<void(int)>(25, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 26 },
+        }}),
         // Signal 'error'
-        QtMocHelpers::SignalData<void(const QString &)>(25, 2, QMC::AccessPublic, QMetaType::Void, {{
+        QtMocHelpers::SignalData<void(const QString &)>(27, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::QString, 12 },
         }}),
         // Slot 'onConnected'
-        QtMocHelpers::SlotData<void()>(26, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onDisconnected'
-        QtMocHelpers::SlotData<void()>(27, 2, QMC::AccessPrivate, QMetaType::Void),
-        // Slot 'onReadyRead'
         QtMocHelpers::SlotData<void()>(28, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onDisconnected'
+        QtMocHelpers::SlotData<void()>(29, 2, QMC::AccessPrivate, QMetaType::Void),
+        // Slot 'onReadyRead'
+        QtMocHelpers::SlotData<void()>(30, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onError'
-        QtMocHelpers::SlotData<void(QAbstractSocket::SocketError)>(29, 2, QMC::AccessPrivate, QMetaType::Void, {{
-            { 0x80000000 | 30, 31 },
+        QtMocHelpers::SlotData<void(QAbstractSocket::SocketError)>(31, 2, QMC::AccessPrivate, QMetaType::Void, {{
+            { 0x80000000 | 32, 33 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -164,18 +170,19 @@ void ChatClient::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 9: _t->addFriendResponse((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
         case 10: _t->createGroupResponse((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
         case 11: _t->joinGroupResponse((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
-        case 12: _t->error((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
-        case 13: _t->onConnected(); break;
-        case 14: _t->onDisconnected(); break;
-        case 15: _t->onReadyRead(); break;
-        case 16: _t->onError((*reinterpret_cast<std::add_pointer_t<QAbstractSocket::SocketError>>(_a[1]))); break;
+        case 12: _t->friendAccepted((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 13: _t->error((*reinterpret_cast<std::add_pointer_t<QString>>(_a[1]))); break;
+        case 14: _t->onConnected(); break;
+        case 15: _t->onDisconnected(); break;
+        case 16: _t->onReadyRead(); break;
+        case 17: _t->onError((*reinterpret_cast<std::add_pointer_t<QAbstractSocket::SocketError>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
         switch (_id) {
         default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
-        case 16:
+        case 17:
             switch (*reinterpret_cast<int*>(_a[1])) {
             default: *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType(); break;
             case 0:
@@ -209,7 +216,9 @@ void ChatClient::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
             return;
         if (QtMocHelpers::indexOfMethod<void (ChatClient::*)(bool )>(_a, &ChatClient::joinGroupResponse, 11))
             return;
-        if (QtMocHelpers::indexOfMethod<void (ChatClient::*)(const QString & )>(_a, &ChatClient::error, 12))
+        if (QtMocHelpers::indexOfMethod<void (ChatClient::*)(int )>(_a, &ChatClient::friendAccepted, 12))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (ChatClient::*)(const QString & )>(_a, &ChatClient::error, 13))
             return;
     }
 }
@@ -233,14 +242,14 @@ int ChatClient::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 17)
+        if (_id < 18)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 17;
+        _id -= 18;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 17)
+        if (_id < 18)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 17;
+        _id -= 18;
     }
     return _id;
 }
@@ -318,8 +327,14 @@ void ChatClient::joinGroupResponse(bool _t1)
 }
 
 // SIGNAL 12
-void ChatClient::error(const QString & _t1)
+void ChatClient::friendAccepted(int _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 12, nullptr, _t1);
+}
+
+// SIGNAL 13
+void ChatClient::error(const QString & _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 13, nullptr, _t1);
 }
 QT_WARNING_POP

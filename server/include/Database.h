@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <mysql/mysql.h>
 #include <string>
@@ -33,6 +33,8 @@ public:
     std::vector<UserInfo> getFriends(int user_id);
     
     std::vector<UserInfo> getFriendRequests(int user_id);
+    
+    bool deleteFriend(int user_id, int friend_id);
     
     int createGroup(const std::string& name, const std::string& description, int owner_id);
     

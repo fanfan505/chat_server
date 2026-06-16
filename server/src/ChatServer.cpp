@@ -62,6 +62,7 @@ void ChatServer::handleMessage(const muduo::net::TcpConnectionPtr& conn, const j
         case 1003: handleRegister(conn, data); break;
         case 2001: handleAddFriend(conn, data); break;
         case 2003: handleAcceptFriend(conn, data); break;
+        case 2007: handleDeleteFriend(conn, data); break;
         case 3001: handleChatMessage(conn, data); break;
         case 2004: handleCreateGroup(conn, data); break;
         case 2005: handleJoinGroup(conn, data); break;
@@ -233,6 +234,33 @@ void ChatServer::handleAcceptFriend(const muduo::net::TcpConnectionPtr& conn, co
         }
     } else {
         response["type"] = 2003;
+        response["success"] = false;
+    }
+    
+    sendResponse(conn, MessageType::ADD_FRIEND_RESPONSE, response);
+}
+
+void ChatServer::handleDeleteFriend(const muduo::net::TcpConnectionPtr& conn, const json& data) {
+    auto it = connectionUsers_.find(conn->name());
+    if (it == connectionUsers_.end()) return;
+    
+    int user_id = it->second;
+    int friend_id = data["friend_id"];
+    
+    json response;
+    if (Database::getInstance().deleteFriend(user_id, friend_id)) {
+        response["type"] = 2007;
+        response["success"] = true;
+        
+        if (isUserOnline(friend_id)) {
+            json notify = {
+                {"type", 2008},
+                {"friend_id", user_id}
+            };
+            sendMessageToUser(friend_id, notify.dump());
+        }
+    } else {
+        response["type"] = 2007;
         response["success"] = false;
     }
     

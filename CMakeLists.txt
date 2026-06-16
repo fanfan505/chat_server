@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.16)
+﻿﻿cmake_minimum_required(VERSION 3.16)
 project(cluster_chat)
 
 set(CMAKE_CXX_STANDARD 14)

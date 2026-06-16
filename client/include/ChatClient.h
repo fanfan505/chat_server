@@ -24,6 +24,7 @@ public:
     void sendAddFriend(int to_id, const QString& message = "");
     void sendCreateGroup(const QString& name, const QString& description);
     void sendJoinGroup(int group_id);
+    void sendDeleteFriend(int friend_id);
     void sendJson(const QJsonObject& data);
 
 signals:
@@ -40,6 +41,8 @@ signals:
     void createGroupResponse(bool success, int group_id);
     void joinGroupResponse(bool success);
     void friendAccepted(int friend_id);
+    void friendDeleted(bool success);
+    void friendRemoved(int friend_id);
     void error(const QString& message);
 
 private slots:

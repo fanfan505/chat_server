@@ -1,4 +1,4 @@
-﻿#include "MainWindow.h"
+#include "MainWindow.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), chatClient_(new C
     connect(chatClient_, &ChatClient::messageReceived, this, &MainWindow::onMessageReceived);
     connect(chatClient_, &ChatClient::friendRequestReceived, this, &MainWindow::onFriendRequestReceived);
     connect(chatClient_, &ChatClient::friendAccepted, this, &MainWindow::onFriendAccepted);
+    connect(chatClient_, &ChatClient::friendDeleted, this, &MainWindow::onFriendDeleted);
+    connect(chatClient_, &ChatClient::friendRemoved, this, &MainWindow::onFriendRemoved);
 }
 
 MainWindow::~MainWindow() {}
@@ -108,6 +110,11 @@ void MainWindow::setupUi() {
     btnJoinGroup_ = new QPushButton("Join Group");
     connect(btnJoinGroup_, &QPushButton::clicked, this, &MainWindow::onJoinGroup);
     btnLayout->addWidget(btnJoinGroup_);
+    
+    btnDeleteFriend_ = new QPushButton("Delete Friend");
+    connect(btnDeleteFriend_, &QPushButton::clicked, this, &MainWindow::onDeleteFriend);
+    btnLayout->addWidget(btnDeleteFriend_);
+    
     leftLayout->addLayout(btnLayout);
     
     chatLayout->addWidget(leftPanel);
@@ -180,6 +187,13 @@ void MainWindow::onSelectFriend(QListWidgetItem* item) {
     currentGroupId_ = 0;
     teChat_->clear();
     teChat_->append(QString("<h3 style='text-align:center;'>Chat with %1</h3>").arg(currentChatName_));
+    
+    if (chatHistory_.contains(currentChatId_)) {
+        for (const auto& msg : chatHistory_[currentChatId_]) {
+            bool isSelf = msg.first == "Me";
+            addMessage(msg.first, msg.second, isSelf);
+        }
+    }
 }
 
 void MainWindow::onSelectGroup(QListWidgetItem* item) {
@@ -246,7 +260,44 @@ void MainWindow::onFriendRequestReceived(const QJsonObject& request) {
 
 void MainWindow::onFriendAccepted(int friend_id) {
     QMessageBox::information(this, "Friend Added", QString("Successfully added user %1 as friend!").arg(friend_id));
-    lwFriends_->addItem(QString("User %1").arg(friend_id));
+    lwFriends_->addItem(QString("User %1 <span style='color:green;'>●</span> (%2)").arg(friend_id).arg(friend_id));
+}
+
+void MainWindow::onDeleteFriend() {
+    if (currentChatId_ == 0) {
+        QMessageBox::warning(this, "Error", "Please select a friend to delete");
+        return;
+    }
+    
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Delete Friend",
+        QString("Are you sure you want to delete user %1?").arg(currentChatId_),
+        QMessageBox::Yes | QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        chatClient_->sendDeleteFriend(currentChatId_);
+    }
+}
+
+void MainWindow::onFriendDeleted(bool success) {
+    if (success) {
+        QMessageBox::information(this, "Success", "Friend deleted successfully!");
+        QList<QListWidgetItem*> items = lwFriends_->findItems(QString("(%1)").arg(currentChatId_), Qt::MatchEndsWith);
+        for (auto item : items) {
+            delete item;
+        }
+        teChat_->clear();
+        currentChatId_ = 0;
+    } else {
+        QMessageBox::warning(this, "Error", "Failed to delete friend");
+    }
+}
+
+void MainWindow::onFriendRemoved(int friend_id) {
+    QMessageBox::information(this, "Friend Removed", QString("User %1 has removed you from their friends").arg(friend_id));
+    QList<QListWidgetItem*> items = lwFriends_->findItems(QString("(%1)").arg(friend_id), Qt::MatchEndsWith);
+    for (auto item : items) {
+        delete item;
+    }
 }
 
 void MainWindow::onConnected() {}
@@ -302,6 +353,10 @@ void MainWindow::addMessage(const QString& sender, const QString& content, bool 
                             "<span style='display:inline-block; max-width:70%; padding:8px 12px; border-radius:12px; background:%2;'>"
                             "<strong style='color:%3;'>%4:</strong> %5"
                             "</span></div>").arg(align).arg(bgColor).arg(color).arg(sender).arg(content));
+    
+    if (currentChatId_ != 0) {
+        chatHistory_[currentChatId_].append(qMakePair(sender, content));
+    }
 }
 
 void MainWindow::loadFriends(const QJsonArray& friends) {

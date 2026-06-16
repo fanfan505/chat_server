@@ -81,6 +81,13 @@ void ChatClient::sendJoinGroup(int group_id) {
     sendJson(data);
 }
 
+void ChatClient::sendDeleteFriend(int friend_id) {
+    QJsonObject data;
+    data["type"] = 2007;
+    data["friend_id"] = friend_id;
+    sendJson(data);
+}
+
 void ChatClient::sendJson(const QJsonObject& data) {
     if (socket_->state() == QAbstractSocket::ConnectedState) {
         QJsonDocument doc(data);
@@ -161,6 +168,14 @@ void ChatClient::onReadyRead() {
             }
             case 2006: {
                 emit friendAccepted(obj["friend_id"].toInt());
+                break;
+            }
+            case 2007: {
+                emit friendDeleted(obj["success"].toBool());
+                break;
+            }
+            case 2008: {
+                emit friendRemoved(obj["friend_id"].toInt());
                 break;
             }
             case 3001: {
