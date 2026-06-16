@@ -44,6 +44,8 @@ private:
     
     void handleAddFriend(const muduo::net::TcpConnectionPtr& conn, const json& data);
     
+    void handleAcceptFriend(const muduo::net::TcpConnectionPtr& conn, const json& data);
+    
     void handleChatMessage(const muduo::net::TcpConnectionPtr& conn, const json& data);
     
     void handleCreateGroup(const muduo::net::TcpConnectionPtr& conn, const json& data);

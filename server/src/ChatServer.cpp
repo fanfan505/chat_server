@@ -61,6 +61,7 @@ void ChatServer::handleMessage(const muduo::net::TcpConnectionPtr& conn, const j
         case 1001: handleLogin(conn, data); break;
         case 1003: handleRegister(conn, data); break;
         case 2001: handleAddFriend(conn, data); break;
+        case 2003: handleAcceptFriend(conn, data); break;
         case 3001: handleChatMessage(conn, data); break;
         case 2004: handleCreateGroup(conn, data); break;
         case 2005: handleJoinGroup(conn, data); break;
@@ -195,6 +196,34 @@ void ChatServer::handleAddFriend(const muduo::net::TcpConnectionPtr& conn, const
         }
     } else {
         response["type"] = 2002;
+        response["success"] = false;
+    }
+    
+    sendResponse(conn, MessageType::ADD_FRIEND_RESPONSE, response);
+}
+
+void ChatServer::handleAcceptFriend(const muduo::net::TcpConnectionPtr& conn, const json& data) {
+    auto it = connectionUsers_.find(conn->name());
+    if (it == connectionUsers_.end()) return;
+    
+    int to_id = it->second;
+    int from_id = data["from_id"];
+    
+    json response;
+    if (Database::getInstance().acceptFriendRequest(from_id, to_id)) {
+        response["type"] = 2003;
+        response["success"] = true;
+        
+        if (RedisClient::getInstance().isUserOnline(from_id)) {
+            json notify = {
+                {"type", 2003},
+                {"success", true},
+                {"from_id", to_id}
+            };
+            forwardToServer(from_id, notify.dump());
+        }
+    } else {
+        response["type"] = 2003;
         response["success"] = false;
     }
     

@@ -128,6 +128,56 @@ chat_client/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client.dir\build.make CMakeFiles/chat_client.dir/build
 .PHONY : chat_client/fast
 
+#=============================================================================
+# Target rules for targets named chat_client_autogen_timestamp_deps
+
+# Build rule for target.
+chat_client_autogen_timestamp_deps: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chat_client_autogen_timestamp_deps
+.PHONY : chat_client_autogen_timestamp_deps
+
+# fast build rule for target.
+chat_client_autogen_timestamp_deps/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client_autogen_timestamp_deps.dir\build.make CMakeFiles/chat_client_autogen_timestamp_deps.dir/build
+.PHONY : chat_client_autogen_timestamp_deps/fast
+
+#=============================================================================
+# Target rules for targets named chat_client_autogen
+
+# Build rule for target.
+chat_client_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 chat_client_autogen
+.PHONY : chat_client_autogen
+
+# fast build rule for target.
+chat_client_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client_autogen.dir\build.make CMakeFiles/chat_client_autogen.dir/build
+.PHONY : chat_client_autogen/fast
+
+chat_client_autogen/mocs_compilation.obj: chat_client_autogen/mocs_compilation.cpp.obj
+.PHONY : chat_client_autogen/mocs_compilation.obj
+
+# target to build an object file
+chat_client_autogen/mocs_compilation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client.dir\build.make CMakeFiles/chat_client.dir/chat_client_autogen/mocs_compilation.cpp.obj
+.PHONY : chat_client_autogen/mocs_compilation.cpp.obj
+
+chat_client_autogen/mocs_compilation.i: chat_client_autogen/mocs_compilation.cpp.i
+.PHONY : chat_client_autogen/mocs_compilation.i
+
+# target to preprocess a source file
+chat_client_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client.dir\build.make CMakeFiles/chat_client.dir/chat_client_autogen/mocs_compilation.cpp.i
+.PHONY : chat_client_autogen/mocs_compilation.cpp.i
+
+chat_client_autogen/mocs_compilation.s: chat_client_autogen/mocs_compilation.cpp.s
+.PHONY : chat_client_autogen/mocs_compilation.s
+
+# target to generate assembly for a file
+chat_client_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\chat_client.dir\build.make CMakeFiles/chat_client.dir/chat_client_autogen/mocs_compilation.cpp.s
+.PHONY : chat_client_autogen/mocs_compilation.cpp.s
+
 client/src/ChatClient.obj: client/src/ChatClient.cpp.obj
 .PHONY : client/src/ChatClient.obj
 
@@ -208,7 +258,12 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... chat_client_autogen
+	@echo ... chat_client_autogen_timestamp_deps
 	@echo ... chat_client
+	@echo ... chat_client_autogen/mocs_compilation.obj
+	@echo ... chat_client_autogen/mocs_compilation.i
+	@echo ... chat_client_autogen/mocs_compilation.s
 	@echo ... client/src/ChatClient.obj
 	@echo ... client/src/ChatClient.i
 	@echo ... client/src/ChatClient.s

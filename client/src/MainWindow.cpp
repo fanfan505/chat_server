@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), chatClient_(new C
     connect(chatClient_, &ChatClient::registerSuccess, this, &MainWindow::onRegisterSuccess);
     connect(chatClient_, &ChatClient::registerFailed, this, &MainWindow::onRegisterFailed);
     connect(chatClient_, &ChatClient::messageReceived, this, &MainWindow::onMessageReceived);
+    connect(chatClient_, &ChatClient::friendRequestReceived, this, &MainWindow::onFriendRequestReceived);
 }
 
 MainWindow::~MainWindow() {}
@@ -224,6 +225,22 @@ void MainWindow::onMessageReceived(const QJsonObject& message) {
     QString sender = message["from_id"].toInt() == currentUserId_ ? "Me" : "Friend";
     QString content = message["content"].toString();
     addMessage(sender, content);
+}
+
+void MainWindow::onFriendRequestReceived(const QJsonObject& request) {
+    int from_id = request["from_id"].toInt();
+    QString message = request["message"].toString();
+    
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Friend Request", 
+        QString("User %1 wants to add you as friend!\nMessage: %2\nAccept?").arg(from_id).arg(message),
+        QMessageBox::Yes | QMessageBox::No);
+    
+    if (reply == QMessageBox::Yes) {
+        QJsonObject acceptData;
+        acceptData["type"] = 2003;
+        acceptData["from_id"] = from_id;
+        chatClient_->sendJson(acceptData);
+    }
 }
 
 void MainWindow::onConnected() {}

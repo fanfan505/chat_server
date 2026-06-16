@@ -24,6 +24,7 @@ public:
     void sendAddFriend(int to_id, const QString& message = "");
     void sendCreateGroup(const QString& name, const QString& description);
     void sendJoinGroup(int group_id);
+    void sendJson(const QJsonObject& data);
 
 signals:
     void connected();

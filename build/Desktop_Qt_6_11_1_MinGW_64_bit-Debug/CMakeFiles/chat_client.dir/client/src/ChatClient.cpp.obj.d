@@ -370,4 +370,5 @@ CMakeFiles/chat_client.dir/client/src/ChatClient.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtCore/quuid.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qendian.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QJsonArray \
- C:/Qt/6.11.1/mingw_64/include/QtCore/qjsonarray.h
+ C:/Qt/6.11.1/mingw_64/include/QtCore/qjsonarray.h \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QList

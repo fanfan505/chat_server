@@ -264,6 +264,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
+  "CMakeFiles/chat_client_autogen.dir/AutogenInfo.json"
   ".qt/QtDeploySupport.cmake"
   ".qt/QtDeployTargets.cmake"
   "CMakeFiles/CMakeDirectoryInformation.cmake"
@@ -272,4 +273,6 @@ set(CMAKE_MAKEFILE_PRODUCTS
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/chat_client.dir/DependInfo.cmake"
+  "CMakeFiles/chat_client_autogen_timestamp_deps.dir/DependInfo.cmake"
+  "CMakeFiles/chat_client_autogen.dir/DependInfo.cmake"
   )

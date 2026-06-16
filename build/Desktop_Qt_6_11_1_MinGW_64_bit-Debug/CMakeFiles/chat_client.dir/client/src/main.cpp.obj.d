@@ -456,4 +456,5 @@ CMakeFiles/chat_client.dir/client/src/main.cpp.obj: \
  C:/Qt/6.11.1/mingw_64/include/QtCore/qiodevice.h \
  C:/Qt/6.11.1/mingw_64/include/QtNetwork/qhostaddress.h \
  C:/Qt/6.11.1/mingw_64/include/QtCore/QObject \
- C:/Qt/6.11.1/mingw_64/include/QtCore/QJsonDocument
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QJsonDocument \
+ C:/Qt/6.11.1/mingw_64/include/QtCore/QList

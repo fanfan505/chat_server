@@ -1,4 +1,9 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/chat_client_autogen.dir/AutogenUsed.txt"
+  "CMakeFiles/chat_client_autogen.dir/ParseCache.txt"
+  "chat_client_autogen"
+  "CMakeFiles/chat_client.dir/chat_client_autogen/mocs_compilation.cpp.obj"
+  "CMakeFiles/chat_client.dir/chat_client_autogen/mocs_compilation.cpp.obj.d"
   "CMakeFiles/chat_client.dir/client/src/ChatClient.cpp.obj"
   "CMakeFiles/chat_client.dir/client/src/ChatClient.cpp.obj.d"
   "CMakeFiles/chat_client.dir/client/src/MainWindow.cpp.obj"
@@ -8,6 +13,8 @@ file(REMOVE_RECURSE
   "chat_client.exe"
   "chat_client.exe.manifest"
   "chat_client.pdb"
+  "chat_client_autogen/mocs_compilation.cpp"
+  "chat_client_autogen/timestamp"
   "libchat_client.dll.a"
 )
 

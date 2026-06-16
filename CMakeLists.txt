@@ -23,7 +23,7 @@ if(BUILD_CLIENT)
     file(GLOB_RECURSE CLIENT_HEADERS "client/include/*.h")
     file(GLOB_RECURSE CLIENT_SOURCES "client/src/*.cpp")
     
-    qt_add_executable(chat_client
+    add_executable(chat_client
         ${CLIENT_SOURCES}
         ${CLIENT_HEADERS}
     )
