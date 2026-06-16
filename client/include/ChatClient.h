@@ -48,7 +48,6 @@ private slots:
     void onError(QAbstractSocket::SocketError socketError);
 
 private:
-    void sendJson(const QJsonObject& data);
     void flushQueue();
 
     QTcpSocket* socket_;
