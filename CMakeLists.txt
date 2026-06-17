@@ -31,17 +31,19 @@ if(BUILD_SERVER)
     
     find_package(Boost REQUIRED)
     
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(MYSQL REQUIRED mysqlclient)
-    pkg_check_modules(HIREDIS REQUIRED hiredis)
+    find_library(MYSQL_LIBRARY mysqlclient HINTS /usr/lib/x86_64-linux-gnu)
+    find_path(MYSQL_INCLUDE_DIR mysql.h HINTS /usr/include/mysql /usr/local/include/mysql)
+    
+    find_library(HIREDIS_LIBRARY hiredis HINTS /usr/lib/x86_64-linux-gnu)
+    find_path(HIREDIS_INCLUDE_DIR hiredis/hiredis.h HINTS /usr/include /usr/local/include)
     
     set(MUDUO_INCLUDE_DIR "/home/fanfan/muduo/include")
     set(MUDUO_LIB_DIR "/home/fanfan/muduo/build/release/lib")
     
     include_directories(${PROJECT_SOURCE_DIR}/server/include)
     include_directories(${Boost_INCLUDE_DIRS})
-    include_directories(${MYSQL_INCLUDE_DIRS})
-    include_directories(${HIREDIS_INCLUDE_DIRS})
+    include_directories(${MYSQL_INCLUDE_DIR})
+    include_directories(${HIREDIS_INCLUDE_DIR})
     include_directories(${MUDUO_INCLUDE_DIR})
     link_directories(${MUDUO_LIB_DIR})
     
@@ -49,6 +51,6 @@ if(BUILD_SERVER)
     file(GLOB_RECURSE SERVER_SOURCES "server/src/*.cpp")
     add_executable(chat_server ${SERVER_SOURCES} ${SERVER_HEADERS})
     target_link_libraries(chat_server muduo_net muduo_base
-                          ${MYSQL_LIBRARIES} ${HIREDIS_LIBRARIES} -lpthread)
+                          ${MYSQL_LIBRARY} ${HIREDIS_LIBRARY} -lpthread)
     message(STATUS "Build server: ON")
 endif()
