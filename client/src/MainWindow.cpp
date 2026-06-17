@@ -3,6 +3,8 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QBrush>
+#include <QColor>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), chatClient_(new ChatClient(this)) {
     setupUi();
@@ -179,10 +181,12 @@ void MainWindow::onSendMessage() {
 }
 
 void MainWindow::onSelectFriend(QListWidgetItem* item) {
-    QString text = item->text();
-    QStringList parts = text.split(" (");
-    currentChatName_ = parts[0];
-    currentChatId_ = parts[1].replace(")", "").toInt();
+    int friendId = item->data(Qt::UserRole).toInt();
+    if (friendId <= 0) {
+        return;
+    }
+    currentChatId_ = friendId;
+    currentChatName_ = item->text();
     isGroupChat_ = false;
     currentGroupId_ = 0;
     teChat_->clear();
@@ -197,10 +201,12 @@ void MainWindow::onSelectFriend(QListWidgetItem* item) {
 }
 
 void MainWindow::onSelectGroup(QListWidgetItem* item) {
-    QString text = item->text();
-    QStringList parts = text.split(" (");
-    currentChatName_ = parts[0];
-    currentChatId_ = parts[1].replace(")", "").toInt();
+    int groupId = item->data(Qt::UserRole).toInt();
+    if (groupId <= 0) {
+        return;
+    }
+    currentChatId_ = groupId;
+    currentChatName_ = item->text();
     isGroupChat_ = true;
     currentGroupId_ = currentChatId_;
     teChat_->clear();
@@ -260,7 +266,10 @@ void MainWindow::onFriendRequestReceived(const QJsonObject& request) {
 
 void MainWindow::onFriendAccepted(int friend_id) {
     QMessageBox::information(this, "Friend Added", QString("Successfully added user %1 as friend!").arg(friend_id));
-    lwFriends_->addItem(QString("User %1 <span style='color:green;'>●</span> (%2)").arg(friend_id).arg(friend_id));
+    QListWidgetItem* item = new QListWidgetItem(QString("User %1 ●").arg(friend_id));
+    item->setData(Qt::UserRole, friend_id);
+    item->setForeground(QBrush(QColor("#22c55e")));
+    lwFriends_->addItem(item);
 }
 
 void MainWindow::onDeleteFriend() {
@@ -281,9 +290,12 @@ void MainWindow::onDeleteFriend() {
 void MainWindow::onFriendDeleted(bool success) {
     if (success) {
         QMessageBox::information(this, "Success", "Friend deleted successfully!");
-        QList<QListWidgetItem*> items = lwFriends_->findItems(QString("(%1)").arg(currentChatId_), Qt::MatchEndsWith);
-        for (auto item : items) {
-            delete item;
+        for (int i = 0; i < lwFriends_->count(); ++i) {
+            QListWidgetItem* item = lwFriends_->item(i);
+            if (item->data(Qt::UserRole).toInt() == currentChatId_) {
+                delete lwFriends_->takeItem(i);
+                break;
+            }
         }
         teChat_->clear();
         currentChatId_ = 0;
@@ -294,9 +306,12 @@ void MainWindow::onFriendDeleted(bool success) {
 
 void MainWindow::onFriendRemoved(int friend_id) {
     QMessageBox::information(this, "Friend Removed", QString("User %1 has removed you from their friends").arg(friend_id));
-    QList<QListWidgetItem*> items = lwFriends_->findItems(QString("(%1)").arg(friend_id), Qt::MatchEndsWith);
-    for (auto item : items) {
-        delete item;
+    for (int i = 0; i < lwFriends_->count(); ++i) {
+        QListWidgetItem* item = lwFriends_->item(i);
+        if (item->data(Qt::UserRole).toInt() == friend_id) {
+            delete lwFriends_->takeItem(i);
+            break;
+        }
     }
 }
 
@@ -363,8 +378,12 @@ void MainWindow::loadFriends(const QJsonArray& friends) {
     lwFriends_->clear();
     for (const auto& friendItem : friends) {
         QJsonObject f = friendItem.toObject();
-        QString status = f["online"].toBool() ? "<span style='color:green;'>●</span>" : "<span style='color:gray;'>●</span>";
-        lwFriends_->addItem(QString("%1 %2 (%3)").arg(f["nickname"].toString()).arg(status).arg(f["id"].toInt()));
+        QString status = f["online"].toBool() ? "●" : "○";
+        QString statusColor = f["online"].toBool() ? "#22c55e" : "#9ca3af";
+        QListWidgetItem* item = new QListWidgetItem(QString("%1 %2").arg(f["nickname"].toString()).arg(status));
+        item->setData(Qt::UserRole, f["id"].toInt());
+        item->setForeground(QBrush(QColor(statusColor)));
+        lwFriends_->addItem(item);
     }
 }
 
@@ -372,7 +391,9 @@ void MainWindow::loadGroups(const QJsonArray& groups) {
     lwGroups_->clear();
     for (const auto& groupItem : groups) {
         QJsonObject g = groupItem.toObject();
-        lwGroups_->addItem(QString("%1 (%2)").arg(g["name"].toString()).arg(g["id"].toInt()));
+        QListWidgetItem* item = new QListWidgetItem(g["name"].toString());
+        item->setData(Qt::UserRole, g["id"].toInt());
+        lwGroups_->addItem(item);
     }
 }
 
